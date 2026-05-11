@@ -34,16 +34,12 @@ async def fetch_oslo_points() -> list:
     print(f"Fant {len(points)} malepunkter i Oslo")
     return points
 
-
 async def fetch_traffic(point_id: str, from_time: datetime, to_time: datetime) -> list:
     query = """
     query {
       trafficData(trafficRegistrationPointId: "%s") {
         volume {
-          byHour(
-            from: "%s"
-            to: "%s"
-          ) {
+          byHour(from: "%s", to: "%s") {
             edges {
               node {
                 from
@@ -76,7 +72,6 @@ async def fetch_traffic(point_id: str, from_time: datetime, to_time: datetime) -
             .get("byHour", {})
             .get("edges", [])
     )
-
     rows = []
     for edge in edges:
         node = edge["node"]
@@ -89,14 +84,10 @@ async def fetch_traffic(point_id: str, from_time: datetime, to_time: datetime) -
         })
     return rows
 
-
 async def fetch_all_points(days_back: int = 7) -> pd.DataFrame:
     points = await fetch_oslo_points()
-    points = points[:20]
-
     to_time = datetime.now(timezone.utc)
     from_time = to_time - timedelta(days=days_back)
-
     all_rows = []
     for point in points:
         point_id = point["id"]
@@ -113,18 +104,16 @@ async def fetch_all_points(days_back: int = 7) -> pd.DataFrame:
             print(f"Hentet {len(rows)} rader fra {name}")
         except Exception as e:
             print(f"Feil ved {name}: {e}")
-
     df = pd.DataFrame(all_rows)
     if not df.empty:
         df["from"] = pd.to_datetime(df["from"])
         df["to"] = pd.to_datetime(df["to"])
     return df
 
-
 def save_raw(df: pd.DataFrame):
     path = Path("data/raw/vegvesen")
     path.mkdir(parents=True, exist_ok=True)
     filename = path / f"traffic_{datetime.now().strftime('%Y%m%d_%H%M')}.csv"
     df.to_csv(filename, index=False)
-    print(f"\nLagret {len(df)} rader til {filename}")
+    print(f"Lagret {len(df)} rader til {filename}")
     return filename

@@ -8,13 +8,11 @@ from api.services.vegvesen import fetch_all_points, save_raw
 
 async def main():
     print("Henter trafikkdata fra Vegvesenet...")
-    df = await fetch_all_points(days_back=7)
-
+    df = await fetch_all_points(days_back=30)
     if df.empty:
         print("Ingen data hentet.")
         return
-
-    print(f"\nHentet totalt {len(df)} rader")
+    print(f"Hentet totalt {len(df)} rader")
     print(df.head(10))
     save_raw(df)
 
