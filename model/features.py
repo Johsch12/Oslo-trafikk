@@ -3,11 +3,15 @@ from pathlib import Path
 
 def load_traffic() -> pd.DataFrame:
     path = Path("data/raw/vegvesen")
-    files = sorted(path.glob("traffic_*.csv"))
+    files = sorted(path.glob("history_*.csv"))
     if not files:
-        raise FileNotFoundError("Ingen trafikkdata funnet. Kjor fetch_historical.py forst.")
-    df = pd.concat([pd.read_csv(f) for f in files])
+        files = sorted(path.glob("traffic_*.csv"))
+    if not files:
+        raise FileNotFoundError("Ingen trafikkdata funnet.")
+    print(f"Laster {len(files)} filer...")
+    df = pd.concat([pd.read_csv(f) for f in files], ignore_index=True)
     df["from"] = pd.to_datetime(df["from"], utc=True)
+    print(f"Totalt {len(df)} rader lastet")
     return df
 
 def add_time_features(df: pd.DataFrame) -> pd.DataFrame:

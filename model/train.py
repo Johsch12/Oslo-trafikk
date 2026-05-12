@@ -1,7 +1,7 @@
 import pandas as pd
+import lightgbm as lgb
 import pickle
 from pathlib import Path
-from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report
 from model.features import load_traffic, build_features
@@ -9,6 +9,7 @@ from model.features import load_traffic, build_features
 def train():
     print("Laster data...")
     df = load_traffic()
+    print("Bygger features...")
     df = build_features(df)
 
     feature_cols = ["hour", "day_of_week", "is_weekend", "is_rush_morning", "is_rush_evening", "month", "volume"]
@@ -17,8 +18,15 @@ def train():
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-    print("Trener modell...")
-    model = RandomForestClassifier(n_estimators=100, random_state=42)
+    print("Trener LightGBM modell...")
+    model = lgb.LGBMClassifier(
+        n_estimators=200,
+        learning_rate=0.05,
+        num_leaves=63,
+        class_weight="balanced",
+        random_state=42,
+        n_jobs=-1
+    )
     model.fit(X_train, y_train)
 
     y_pred = model.predict(X_test)
