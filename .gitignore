@@ -216,3 +216,8 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+model/saved/*.pkl
+data/raw/
+data/processed/
+data/cache/
