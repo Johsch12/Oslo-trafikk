@@ -545,6 +545,25 @@
     letter-spacing: 0.3px;
   }
   #clearRouteBtn:hover { border-color: var(--red); color: var(--red); }
+
+  /* Helligdag/klemmedag-badge ved slideren */
+  #holidayBadge {
+    display: none;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    background: rgba(255,77,0,0.12);
+    border: 1px solid rgba(255,77,0,0.35);
+    border-radius: 20px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--accent);
+    white-space: nowrap;
+    letter-spacing: 0.3px;
+    flex-shrink: 0;
+    animation: fadeIn 0.3s ease;
+  }
+  @keyframes fadeIn { from { opacity:0; transform:scale(0.9); } to { opacity:1; transform:scale(1); } }
 </style>
 </head>
 <body>
@@ -607,6 +626,7 @@
   <input type="range" class="timeline-slider" id="timeSlider" min="0" max="24" value="0" step="1">
   <span class="time-label">+12t</span>
   <div class="time-display" id="timeDisplay">NÅ</div>
+  <div id="holidayBadge"></div>
   <div class="legend">
     <div class="legend-item">
       <div class="legend-dot" style="background:#00ff88"></div>Fri
