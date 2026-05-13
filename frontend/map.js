@@ -25,6 +25,7 @@ let currentOffset = 0;        // timer (kan være 0.5, 1.0, 1.5 …)
 let trafficOn     = true;
 let routeLayer    = null;
 let routeMarkers  = [];
+let routeInfo     = null;   // {durMin, distKm}
 let roadsCtrl     = null;
 let loadTimer     = null;
 let rafId         = null;
@@ -323,6 +324,7 @@ async function drawRoute() {
     const coords     = data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
     const durMin     = Math.round(data.routes[0].duration / 60);
     const distKm     = (data.routes[0].distance / 1000).toFixed(1);
+    routeInfo        = { durMin, distKm };
     const h          = (new Date().getHours() + currentOffset) % 24;
     const dinfo      = getDayInfo(currentOffset);
     const isOff      = ['holiday', 'bridge', 'holiday_period'].includes(dinfo.type);
@@ -353,6 +355,7 @@ function clearRoute() {
   if (routeLayer) { map.removeLayer(routeLayer); routeLayer = null; }
   routeMarkers.forEach(m => map.removeLayer(m));
   routeMarkers = [];
+  routeInfo = null;
   document.getElementById('travelTime').textContent = '-- min';
   document.getElementById('travelSub').textContent  = 'Velg rute for estimat';
   const btn = document.getElementById('clearRouteBtn');
@@ -411,18 +414,17 @@ function applySliderValue(val) {
   if (roadData && trafficOn) renderRoads(roadData, offset);
 
   // Rutefarge og reisetidstekst
-  if (routeLayer) {
+  if (routeLayer && routeInfo) {
     const h      = (new Date().getHours() + offset) % 24;
     const dinfo  = getDayInfo(offset);
     const isOff  = ['holiday', 'bridge', 'holiday_period'].includes(dinfo.type);
     const isRush = !isOff && ((h >= 7 && h <= 9) || (h >= 15 && h <= 18));
+    const mult   = isRush ? 1.6 : (isOff ? 0.7 : 1.0);
+    const adjMin = Math.round(routeInfo.durMin * mult);
     routeLayer.setStyle({ color: COLORS[isRush ? 3 : (isOff ? 0 : 1)] });
-    const sub   = document.getElementById('travelSub');
-    const match = sub?.textContent.match(/Bil · ([\d.]+) km/);
-    if (match) {
-      const suffix = isRush ? 'Rushtid 🔴' : isOff ? (dinfo.label || 'Lav trafikk 🟢') : 'Normal 🟢';
-      sub.textContent = `Bil · ${match[1]} km · ${suffix}`;
-    }
+    document.getElementById('travelTime').textContent = adjMin + ' min';
+    const suffix = isRush ? 'Rushtid 🔴' : isOff ? (dinfo.label || 'Lav trafikk 🟢') : 'Normal 🟢';
+    document.getElementById('travelSub').textContent = `Bil · ${routeInfo.distKm} km · ${suffix}`;
   }
 }
 
